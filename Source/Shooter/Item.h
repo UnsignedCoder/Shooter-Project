@@ -19,6 +19,16 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	//Called when overlapping area sphere 
+	UFUNCTION()
+	void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	
+	//Called when stop overlapping area sphere
+	UFUNCTION()
+	void OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -27,17 +37,17 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* ItemMesh;
 
-	//Line trace colliide with box to show widget
-	UPROPERTY(Editanywhere, BlueprintReadOnly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
+	//Line trace collide with box to show widget
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* CollisionBox;
 
 	//Item popup widget 
-	UPROPERTY(Editanywhere, BlueprintReadOnly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* PickupWidget;
 
 	//Enables item tracing when overlapped
-	UPROPERTY(Editanywhere, BlueprintReadOnly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
-	class USphereComponent AreaSphere;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
+	class USphereComponent* AreaSphere;
 
 
 public:

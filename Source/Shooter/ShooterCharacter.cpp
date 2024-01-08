@@ -27,7 +27,10 @@ AShooterCharacter::AShooterCharacter() :
 	ShootTimeDuration(0.05f), bFiringBullet(false),
 
 	//Automatic fire variables
-	bShouldFire(true), AutomaticFireRate(0.1f), bFireButtonPressed(false)
+	bShouldFire(true), AutomaticFireRate(0.1f), bFireButtonPressed(false),
+
+	//Item Trace Variables
+	bShouldTraceItems(false)
 
 {
 	// Set this character to call Tick() every frame. You can turn this off to improve performance if you don't need it.
@@ -104,19 +107,7 @@ void AShooterCharacter::Tick(float DeltaTime) {
 	// Calculate crosshair spread multiplier
 	CalculateCrosshairSpread(DeltaTime);
 
-	FHitResult WeaponTraceResult;
-	FVector HitLocation;
-	TraceUnderCrosshairs(WeaponTraceResult, HitLocation);
-	if (WeaponTraceResult.GetActor()) {
-		AItem* HitItem = Cast<AItem>(WeaponTraceResult.GetActor());
-
-		if (HitItem && HitItem->GetPickupWidget()) {
-			//Show Item Pickup Widget
-			HitItem->GetPickupWidget()->SetVisibility(true);
-		}
-	}
 }
-
 
 // Function to handle when the aiming button is pressed
 void AShooterCharacter::AimingButtonPressed() {
@@ -367,4 +358,32 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, 
 		OutBeamLocation = WeaponTraceHit.Location;
 		return true;
 	} return false;
+}
+
+void AShooterCharacter::IncrementOverlappedItemCount(int8 Amount) {
+	if (OverlappedItemCount + Amount <= 0) {
+		OverlappedItemCount = 0;
+		bShouldTraceItems = false;
+	}
+	else {
+		OverlappedItemCount += Amount;
+		bShouldTraceItems = true;
+	}
+}
+
+void AShooterCharacter::TraceForItems() {
+	if (bShouldTraceItems) {
+		FHitResult WeaponTraceResult;
+		FVector HitLocation;
+		TraceUnderCrosshairs(WeaponTraceResult, HitLocation);
+		if (WeaponTraceResult.GetActor()) {
+			AItem* HitItem = Cast<AItem>(WeaponTraceResult.GetActor());
+
+			if (HitItem && HitItem->GetPickupWidget()) {
+				//Show Item Pickup Widget
+				HitItem->GetPickupWidget()->SetVisibility(true);
+			}
+		}
+	}
+
 }
