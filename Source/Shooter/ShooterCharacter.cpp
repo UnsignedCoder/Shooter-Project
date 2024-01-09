@@ -30,7 +30,7 @@ AShooterCharacter::AShooterCharacter() :
 	bShouldFire(true), AutomaticFireRate(0.1f), bFireButtonPressed(false),
 
 	//Item Trace Variables
-	bShouldTraceItems(false)
+	bShouldTraceForItems(false)
 
 {
 	// Set this character to call Tick() every frame. You can turn this off to improve performance if you don't need it.
@@ -363,16 +363,16 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, 
 void AShooterCharacter::IncrementOverlappedItemCount(int8 Amount) {
 	if (OverlappedItemCount + Amount <= 0) {
 		OverlappedItemCount = 0;
-		bShouldTraceItems = false;
+		bShouldTraceForItems = false;
 	}
 	else {
 		OverlappedItemCount += Amount;
-		bShouldTraceItems = true;
+		bShouldTraceForItems = true;
 	}
 }
 
 void AShooterCharacter::TraceForItems() {
-	if (bShouldTraceItems) {
+	if (bShouldTraceForItems) {
 		FHitResult WeaponTraceResult;
 		FVector HitLocation;
 		TraceUnderCrosshairs(WeaponTraceResult, HitLocation);

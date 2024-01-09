@@ -178,7 +178,7 @@ private:
     FTimerHandle AutoFireTImer;
 
     //True if should trace every frame for items
-    bool bShouldTraceItems;
+    bool bShouldTraceForItems;
 
     //Number of Overlapped Items
 	int8 OverlappedItemCount;
@@ -197,7 +197,7 @@ public:
     UFUNCTION(BlueprintCallable)
     float GetCrosshairSpreadMultiplier() const;
 
-    FORCEINLINE int8 OverlappedItemCount() const { return OverlappedItemCount; }
+    FORCEINLINE int8 GetOverlappedItemCount() const { return OverlappedItemCount; }
 
 	// Adds/Subtracts to and from Overlapped items and updates bShouldTraceItems
     void IncrementOverlappedItemCount(int8 Amount);
