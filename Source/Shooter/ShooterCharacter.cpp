@@ -107,6 +107,8 @@ void AShooterCharacter::Tick(float DeltaTime) {
 	// Calculate crosshair spread multiplier
 	CalculateCrosshairSpread(DeltaTime);
 
+	// Trace for items if overlapped
+	TraceForItems();
 }
 
 // Function to handle when the aiming button is pressed
@@ -385,5 +387,4 @@ void AShooterCharacter::TraceForItems() {
 			}
 		}
 	}
-
 }

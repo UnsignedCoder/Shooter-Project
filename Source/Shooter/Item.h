@@ -41,7 +41,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* CollisionBox;
 
-	//Item popup widget 
+	//Item pop-up widget 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* PickupWidget;
 
@@ -49,6 +49,8 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
 	class USphereComponent* AreaSphere;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
+	float SphereRadius;
 
 public:
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
