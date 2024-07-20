@@ -7,11 +7,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 #include "Engine/SkeletalMeshSocket.h"
-#include "DrawDebugHelpers.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Item.h"
 #include "Components/WidgetComponent.h"
-#include "DrawDebugHelpers.h"
+
 
 // Sets default values for the ShooterCharacter class
 AShooterCharacter::AShooterCharacter() :
@@ -27,7 +26,7 @@ AShooterCharacter::AShooterCharacter() :
 	ShootTimeDuration(0.05f), bFiringBullet(false),
 
 	//Automatic fire variables
-	bShouldFire(true), AutomaticFireRate(0.1f), bFireButtonPressed(false),
+	bFireButtonPressed(false), bShouldFire(true), AutomaticFireRate(0.1f),
 
 	//Item Trace Variables
 	bShouldTraceForItems(false)
@@ -107,13 +106,24 @@ void AShooterCharacter::Tick(float DeltaTime) {
 	// Calculate crosshair spread multiplier
 	CalculateCrosshairSpread(DeltaTime);
 
-	// Trace for items if overlapped
-	TraceForItems();
+	if (bShouldTraceForItems) {
+		FHitResult WeaponTraceResult;
+		FVector HitLocation;
+		TraceUnderCrosshairs(WeaponTraceResult, HitLocation);
+		if (WeaponTraceResult.GetActor()) {
+			AItem* HitItem = Cast<AItem>(WeaponTraceResult.GetActor());
+
+			if (HitItem && HitItem->GetPickupWidget()) {
+				//Show Item Pickup Widget
+				HitItem->GetPickupWidget()->SetVisibility(true);
+			}
+		}
+	}
 }
 
 // Function to handle when the aiming button is pressed
 void AShooterCharacter::AimingButtonPressed() {
-	bAiming = true;
+	bAiming =true;
 }
 
 // Function to handle when the aiming button is released
@@ -166,7 +176,7 @@ void AShooterCharacter::CameraInterpZoom(float DeltaTime) {
 		// Interpolate to default FOV
 		CameraCurrentFOV = FMath::FInterpTo(CameraCurrentFOV, CameraDefaultFOV, DeltaTime, ZoomInterpSpeed);
 	}
-	GetFollowCamera()->SetFieldOfView(CameraCurrentFOV);
+	GetFollowCamera()->SetFieldOfView(CameraCurrentFOV);  
 }
 
 // Function to calculate crosshair spread multiplier
@@ -218,7 +228,7 @@ void AShooterCharacter::FinishCrosshairBulletFire() {
 }
 
 bool AShooterCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& OutHitLocation) {
-	//Get VIewport SIze
+	//Get Viewport Size
 	FVector2D ViewportSize;
 
 	if (GEngine && GEngine->GameViewport) {
@@ -251,6 +261,32 @@ bool AShooterCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& 
 	return false;
 }
 
+// Function to get the end location of the beam
+bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation)
+{
+	FHitResult CrosshairHitResult;
+	bool bCrosshairHit = TraceUnderCrosshairs(CrosshairHitResult, OutBeamLocation); //Check for crosshair trace hit
+
+	if (bCrosshairHit) {
+		//Tentative beam location - still need to trace under gun
+		OutBeamLocation = CrosshairHitResult.Location;
+	}
+	else {//No crosshair hit
+		//OutBeamLocation is the end location for the line trace
+	}
+	// Perform a second trace from the gun barrel
+	FHitResult WeaponTraceHit;
+	const FVector WeaponTraceStart = MuzzleSocketLocation;
+	const FVector StartToEnd = OutBeamLocation - MuzzleSocketLocation;
+	const FVector WeaponTraceEnd = MuzzleSocketLocation + StartToEnd * 1.25f;
+	GetWorld()->LineTraceSingleByChannel(WeaponTraceHit, WeaponTraceStart, WeaponTraceEnd, ECollisionChannel::ECC_Visibility);
+
+	if (WeaponTraceHit.bBlockingHit) { // Object between barrel and cross-hair
+		OutBeamLocation = WeaponTraceHit.Location;
+		return true;
+	} return false;
+}
+ 
 // Function to get the current crosshair spread multiplier
 float AShooterCharacter::GetCrosshairSpreadMultiplier() const {
 	return CrosshairSpreadMultiplier;
@@ -281,16 +317,18 @@ void AShooterCharacter::MoveRight(float Value) {
 // Function to handle looking up with the specified rate
 void AShooterCharacter::LookUpRate(float Value) {
 	// Adjust the pitch of the controller based on input and sensitivity
-	APawn::AddControllerPitchInput(Value * CurrentAimSensitivity);
+	APawn::AddControllerPitchInput(Value *CurrentAimSensitivity);
 }
 
 // Function to handle turning with the specified rate
 void AShooterCharacter::TurnRate(float Value) {
 	// Adjust the yaw of the controller based on input and sensitivity
-	APawn::AddControllerYawInput(Value * CurrentAimSensitivity);
+	APawn::AddControllerYawInput(Value *CurrentAimSensitivity);
 }
 
 // Function to handle firing the weapon
+
+
 void AShooterCharacter::FireWeapon() {
 	// Play the fire sound if available
 	if (FireSound) {
@@ -337,54 +375,3 @@ void AShooterCharacter::FireWeapon() {
 	StartCrosshairBulletFire();
 }
 
-// Function to get the end location of the beam
-bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation) {
-	FHitResult CrosshairHitResult;
-	bool bCrosshairHit = TraceUnderCrosshairs(CrosshairHitResult, OutBeamLocation); //Check for crosshair trace hit
-
-	if (bCrosshairHit) {
-		//Tentative beam location - still need to trace under gun
-		OutBeamLocation = CrosshairHitResult.Location;
-	}
-	else {//No crosshair hit
-		//OutBeamLocation is the end location for the line trace
-	}
-	// Perform a second trace from the gun barrel
-	FHitResult WeaponTraceHit;
-	const FVector WeaponTraceStart = MuzzleSocketLocation;
-	const FVector StartToEnd = OutBeamLocation - MuzzleSocketLocation;
-	const FVector WeaponTraceEnd = MuzzleSocketLocation + StartToEnd * 1.25f;
-	GetWorld()->LineTraceSingleByChannel(WeaponTraceHit, WeaponTraceStart, WeaponTraceEnd, ECollisionChannel::ECC_Visibility);
-
-	if (WeaponTraceHit.bBlockingHit) { // Object between barrel and cross-hair
-		OutBeamLocation = WeaponTraceHit.Location;
-		return true;
-	} return false;
-}
-
-void AShooterCharacter::IncrementOverlappedItemCount(int8 Amount) {
-	if (OverlappedItemCount + Amount <= 0) {
-		OverlappedItemCount = 0;
-		bShouldTraceForItems = false;
-	}
-	else {
-		OverlappedItemCount += Amount;
-		bShouldTraceForItems = true;
-	}
-}
-
-void AShooterCharacter::TraceForItems() {
-	if (bShouldTraceForItems) {
-		FHitResult WeaponTraceResult;
-		FVector HitLocation;
-		TraceUnderCrosshairs(WeaponTraceResult, HitLocation);
-		if (WeaponTraceResult.GetActor()) {
-			AItem* HitItem = Cast<AItem>(WeaponTraceResult.GetActor());
-
-			if (HitItem && HitItem->GetPickupWidget()) {
-				//Show Item Pickup Widget
-				HitItem->GetPickupWidget()->SetVisibility(true);
-			}
-		}
-	}
-}

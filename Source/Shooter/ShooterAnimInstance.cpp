@@ -33,8 +33,8 @@ void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 			bIsAccelerating = false;
 		}
 
-		FRotator AimRotation = ShooterCharacter->GetBaseAimRotation(); //Get aim rotation
-		FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(ShooterCharacter->GetVelocity()); //Get movement direction's rotation
+		const FRotator AimRotation = ShooterCharacter->GetBaseAimRotation(); //Get aim rotation
+		const FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(ShooterCharacter->GetVelocity()); //Get movement direction's rotation
 		MovementOffset = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation).Yaw; //Difference between the direction you are aiming and the direction of movement 
 
 		if (ShooterCharacter->GetVelocity().Size() > 0.0f) {
